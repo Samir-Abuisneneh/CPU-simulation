@@ -1,1 +1,1 @@
-    print(execOrder);
+compareCPU
