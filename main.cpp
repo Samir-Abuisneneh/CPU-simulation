@@ -1,4 +1,5 @@
 #include <bits/stdc++.h>
+#include<thread>
 #include "TextTable.h"
 using namespace std;
 struct PCB
@@ -265,6 +266,11 @@ void roundRobin()
 int main()
 {
     ifstream file("processes.txt");
+    if (!file)
+    {
+        cout<<"processes.txt not found";
+        return 1;
+    }
     file >> memorySize >> pageSize >> quantum >> CS;
     while (!file.eof())
     {
@@ -275,8 +281,11 @@ int main()
     processFCFS = process;
     processSJF = process;
     processRR = process;
-    FCFS();
-    SJF();
-    roundRobin();
+    thread t1(FCFS);
+    t1.join();
+    thread t2(SJF);
+    t2.join();
+    thread t3(roundRobin);
+    t3.join();
     return 0;
 }
