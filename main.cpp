@@ -62,15 +62,73 @@ void printInfo(vector<PCB> process, vector<int> finishTime,
     cout << "CPU Utilization = " << (optimalCPUusage / (progress * 1.0)) * 100 << "%\n";
 }
 
-void FCFS() //First Come First Serve algorithm, based on sorting processes based on arrival time
+void printPageTable(vector<vector<pair<int, int>>> pageTable, vector<int> temp, int numberOfProcesses)
 {
-    TextTable table('-', '|', 'x'); //table for representing gantt chart
+    TextTable table('-', '|', 'x');
+    cout << "Page Table for each process: \n";
+    for (int i = 0; i < numberOfProcesses; i++)
+    {
+        table.add(" Process " + to_string(i));
+        table.add("");
+        table.endOfRow();
+        table.add(" page number ");
+        table.add(" frame number ");
+        table.endOfRow();
+        for (int j = 0; j < temp[i]; j++) // could be 0 ??
+        {
+            table.add("     " + to_string(pageTable[i][j].first));
+            table.add("     " + to_string(pageTable[i][j].second));
+            table.endOfRow();
+        }
+        table.endOfRow();
+    }
+    cout << '\n'
+         << table << '\n';
+}
+
+void printMemoryTable(vector<bool> memory)
+{
+    TextTable table('-', '|', 'x');
+    cout << "Logical Memory Status: \n";
+    table.add(" Frame number ");
+    table.add(" Frame status ");
+    table.endOfRow();
+    for (int i = 0; i < memory.size(); i++)
+    {
+        table.add("      " + to_string(i));
+        if (memory[i] == true)
+        {
+            table.add("     Busy");
+        }
+        else
+        {
+            table.add("     Free");
+        }
+        table.endOfRow();
+    }
+    cout << '\n'
+         << table << '\n';
+}
+
+void printPhysicalAddress()
+{
+    int logicalAddress;
+    int x, y;
+    cout << "Enter logical address: \n";
+    cin >> logicalAddress;
+    x = ceil(logicalAddress / (pageSize*1.0));
+    y = logicalAddress % pageSize;
+    cout << "Physical Address is: " << (pageSize * x) + y <<"\n";
+}
+void FCFS() // First Come First Serve algorithm, based on sorting processes based on arrival time
+{
+    TextTable table('-', '|', 'x'); // table for representing gantt chart
     cout << "\n/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\ FCFS /\\/\\/\\/\\/\\/\\/\\/\\/\\/\\\n";
     string tableInput;
-    sort(processFCFS.begin(), processFCFS.end(), compareTime); //sort processes based on time
+    sort(processFCFS.begin(), processFCFS.end(), compareTime); // sort processes based on time
     vector<int> finishTime, waitTime, turnaroundTime;
     int progress = 0;
-    for (int i = 0; i < processFCFS.size(); i++) //first row of gantt chart
+    for (int i = 0; i < processFCFS.size(); i++) // first row of gantt chart
     {
         tableInput = (to_string(processFCFS[i].processID));
         table.add("P" + tableInput + " ");
@@ -80,7 +138,7 @@ void FCFS() //First Come First Serve algorithm, based on sorting processes based
         }
     }
     table.endOfRow();
-    for (int i = 0; i < processFCFS.size(); i++) //second row of gantt chart
+    for (int i = 0; i < processFCFS.size(); i++) // second row of gantt chart
     {
         tableInput = "";
         tableInput = to_string(progress);
@@ -102,8 +160,8 @@ void FCFS() //First Come First Serve algorithm, based on sorting processes based
     printInfo(processFCFS, finishTime, waitTime, turnaroundTime, progress);
 }
 
-void SJF() //Shortest Job First, works by servicing the shortest CPU burst first (algorithm discussed with Mr. omar aburish)
-{ 
+void SJF() // Shortest Job First, works by servicing the shortest CPU burst first (algorithm discussed with Mr. omar aburish)
+{
     cout << "\n/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\ SJF /\\/\\/\\/\\/\\/\\/\\/\\/\\/\\\n";
     TextTable table('-', '|', 'x');
     vector<PCB> ready;
@@ -113,23 +171,23 @@ void SJF() //Shortest Job First, works by servicing the shortest CPU burst first
     int elapsed = 0;
     int size = processSJF.size();
     string tableInput;
-    for (int i = 0; i < size; i++) //first check if the process has arrived
+    for (int i = 0; i < size; i++) // first check if the process has arrived
     {
         for (int j = 0; j < processSJF.size(); j++)
         {
             if (processSJF[j].arTime <= elapsed)
             {
                 ready.push_back(processSJF[j]);
-                sort(ready.begin(), ready.end(), compareCPUburst); //sort arrived processes based on CPU burst
+                sort(ready.begin(), ready.end(), compareCPUburst); // sort arrived processes based on CPU burst
                 processSJF.erase(processSJF.begin() + j);
                 j--;
             }
         }
-        elapsed += ready[0].CPUburst; //increase elapsed time
-        execOrder.push_back(ready[0]);//push shortest element to the top of the execution order 
-        ready.erase(ready.begin()); 
+        elapsed += ready[0].CPUburst;  // increase elapsed time
+        execOrder.push_back(ready[0]); // push shortest element to the top of the execution order
+        ready.erase(ready.begin());
     }
-    for (int i = 0; i < execOrder.size(); i++) //first row of gantt chart
+    for (int i = 0; i < execOrder.size(); i++) // first row of gantt chart
     {
         tableInput = (to_string(execOrder[i].processID));
         table.add("P" + tableInput + " ");
@@ -139,7 +197,7 @@ void SJF() //Shortest Job First, works by servicing the shortest CPU burst first
         }
     }
     table.endOfRow();
-    for (int i = 0; i < execOrder.size(); i++) //second row of gantt chart
+    for (int i = 0; i < execOrder.size(); i++) // second row of gantt chart
     {
         tableInput = "";
         tableInput = to_string(progress);
@@ -148,7 +206,7 @@ void SJF() //Shortest Job First, works by servicing the shortest CPU burst first
         tableInput += (" " + to_string(progress));
         table.add(tableInput);
         finishTime.push_back(progress);
-        if (execOrder.size() - i != 1) //check if not last element
+        if (execOrder.size() - i != 1) // check if not last element
         {
             progress += CS;
             tableInput = (to_string(progress) + " " + to_string(progress + CS));
@@ -161,7 +219,7 @@ void SJF() //Shortest Job First, works by servicing the shortest CPU burst first
     printInfo(execOrder, finishTime, waitTime, turnaroundTime, progress);
 }
 
-void roundRobin() //Round Robin algorithm works in multiples of quantum
+void roundRobin() // Round Robin algorithm works in multiples of quantum
 {
     cout << "\n/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\ RoundRobin /\\/\\/\\/\\/\\/\\/\\/\\/\\/\\\n";
     TextTable table('-', '|', 'x');
@@ -171,10 +229,10 @@ void roundRobin() //Round Robin algorithm works in multiples of quantum
     int progress = 0;
     int elapsed = 0;
     int numOfIterations = 0;
-    vector<string> tableInput_processNames; //used for gantt chart
-    vector<string> tableInput_processValues;//used for gantt chart
+    vector<string> tableInput_processNames;  // used for gantt chart
+    vector<string> tableInput_processValues; // used for gantt chart
     tableInput_processValues.push_back(to_string(0));
-    for (int i = 0; i < processRR.size(); i++) //calculate the number of iterations to finish all processes
+    for (int i = 0; i < processRR.size(); i++) // calculate the number of iterations to finish all processes
     {
         double temp = processRR[i].CPUburst / 10.0;
         numOfIterations += ceil(temp);
@@ -183,28 +241,28 @@ void roundRobin() //Round Robin algorithm works in multiples of quantum
     {
         for (int j = 0; j < processRR.size(); j++)
         {
-            if (processRR[j].arTime <= elapsed) //check if process has arrived
+            if (processRR[j].arTime <= elapsed) // check if process has arrived
             {
                 ready.push_back(processRR[j]);
-                sort(ready.begin(), ready.end(), compareTime); //sort on CPU burst
-                processRR.erase(processRR.begin() + j); //remove selected item from original vector
+                sort(ready.begin(), ready.end(), compareTime); // sort on CPU burst
+                processRR.erase(processRR.begin() + j);        // remove selected item from original vector
                 j--;
             }
         }
-        if (numOfIterations - i != 0 && !RRqueue.empty()) //if not first of last element add a context switch
+        if (numOfIterations - i != 0 && !RRqueue.empty()) // if not first of last element add a context switch
         {
             progress += CS;
         }
         if (!RRqueue.empty()) // when the queue is not empty
         {
-            for (int k = 0; k < ready.size(); k++) //insert new elemnts from arrived items
+            for (int k = 0; k < ready.size(); k++) // insert new elemnts from arrived items
             {
                 RRqueue.push(ready[k]);
             }
             PCB temp;
             temp = RRqueue.front();
-            waitTime[temp.processID] += abs(progress - finishTime[temp.processID]); //wait time for each process
-            if (temp.CPUburst - quantum > 0) //if CPU burst of process is larger than quantum move progress by counter value
+            waitTime[temp.processID] += abs(progress - finishTime[temp.processID]); // wait time for each process
+            if (temp.CPUburst - quantum > 0)                                        // if CPU burst of process is larger than quantum move progress by counter value
             {
                 progress += quantum;
             }
@@ -212,7 +270,7 @@ void roundRobin() //Round Robin algorithm works in multiples of quantum
             {
                 progress += temp.CPUburst;
             }
-            temp.CPUburst -= quantum; //subtract quantum from CPU burst 
+            temp.CPUburst -= quantum; // subtract quantum from CPU burst
             tableInput_processNames.push_back("P" + to_string(temp.processID));
             RRqueue.pop();
 
@@ -246,12 +304,12 @@ void roundRobin() //Round Robin algorithm works in multiples of quantum
         waitTime[i] = waitTime[i] - process[i].arTime;
     }
 
-    for (int i = 0; i < tableInput_processNames.size(); i++) //first row of gantt chart
+    for (int i = 0; i < tableInput_processNames.size(); i++) // first row of gantt chart
     {
         table.add(tableInput_processNames[i]);
     }
     table.endOfRow();
-    for (int i = 1; i < tableInput_processValues.size(); i++) //second row of gantt chart
+    for (int i = 1; i < tableInput_processValues.size(); i++) // second row of gantt chart
     {
         string temp;
         temp = ((tableInput_processValues[i - 1]) + " " + tableInput_processValues[i]);
@@ -262,16 +320,55 @@ void roundRobin() //Round Robin algorithm works in multiples of quantum
     printInfo(process, finishTime, waitTime, turnaroundTime, progress);
 }
 
+void memoryPaging()
+{
+    srand(time(0));
+    int totalPages = memorySize / pageSize;
+    int neededPages = 0;
+    int numberOfProcesses = process.size();
+    int max_number = totalPages - 1;
+    int min_number = 0;
+    vector<int> processPages(numberOfProcesses);
+    vector<int> temp(numberOfProcesses);
+    vector<bool> memory;
+    vector<vector<pair<int, int>>> pageTable;
+    memory.resize(totalPages, false); // init all values to false
+    cout << "totalPages: " << totalPages << "\n\n";
+    for (int i = 0; i < numberOfProcesses; i++)
+    {
+        processPages[i] = process[i].sizeByte / pageSize;
+        neededPages += processPages[i];
+    }
+    temp = processPages;
+    for (int i = 0; i < numberOfProcesses; i++)
+    {
+        pageTable.push_back(vector<pair<int, int>>());
+        while (processPages[i] > 0) // could be 0 ??
+        {
+            int randomVal = rand() % (max_number + 1 - min_number) + min_number;
+            if (memory[randomVal] == false)
+            {
+                pageTable[i].push_back(make_pair(processPages[i], randomVal));
+                memory[randomVal] = true;
+                processPages[i]--;
+            }
+        }
+    }
+    printPageTable(pageTable, temp, numberOfProcesses);
+    printMemoryTable(memory);
+    printPhysicalAddress();
+}
+
 int main()
 {
-    ifstream file("processes.txt"); 
-    if (!file)  //check if file exists
+    ifstream file("processes.txt");
+    if (!file) // check if file exists
     {
         cout << "processes.txt not found";
         return 1;
     }
-    file >> memorySize >> pageSize >> quantum >> CS; //read file
-    while (!file.eof()) //read processes from file
+    file >> memorySize >> pageSize >> quantum >> CS; // read file
+    while (!file.eof())                              // read processes from file
     {
         PCB temp;
         file >> temp.processID >> temp.arTime >> temp.CPUburst >> temp.sizeByte;
@@ -280,12 +377,16 @@ int main()
     processFCFS = process;
     processSJF = process;
     processRR = process;
-    //MULTI THREADING
-    thread t1(FCFS); //create first thread(FCFS)
-    t1.join(); //start thread
-    thread t2(SJF); //create second thread(SJF)
-    t2.join(); //start thread
-    thread t3(roundRobin); //create third thread(RR)
-    t3.join(); //start thread
+    // //MULTI THREADING
+    // FCFS();
+    // SJF();
+    // roundRobin();
+    // thread t1(FCFS); //create first thread(FCFS)
+    // t1.join(); //start thread
+    // thread t2(SJF); //create second thread(SJF)
+    // t2.join(); //start thread
+    // thread t3(roundRobin); //create third thread(RR)
+    // t3.join(); //start thread
+    memoryPaging();
     return 0;
 }
