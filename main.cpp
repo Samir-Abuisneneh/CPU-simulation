@@ -333,13 +333,21 @@ void memoryPaging()
     vector<bool> memory;
     vector<vector<pair<int, int>>> pageTable;
     memory.resize(totalPages, false); // init all values to false
-    cout << "totalPages: " << totalPages << "\n\n";
     for (int i = 0; i < numberOfProcesses; i++)
     {
         processPages[i] = process[i].sizeByte / pageSize;
         neededPages += processPages[i];
     }
+    if (neededPages > totalPages)
+    {
+        cout<<"Not enough memory!!\nclosing...";
+        return;
+    }
     temp = processPages;
+    cout<<"Memory size: "<<memorySize/1024<<"Kb\n";
+    cout<<"Page size: "<<pageSize<<" Bytes\n";
+    cout<<"total pages: "<<totalPages<<"\n\n";
+
     for (int i = 0; i < numberOfProcesses; i++)
     {
         pageTable.push_back(vector<pair<int, int>>());
@@ -377,16 +385,25 @@ int main()
     processFCFS = process;
     processSJF = process;
     processRR = process;
-    // //MULTI THREADING
-    // FCFS();
-    // SJF();
-    // roundRobin();
+    FCFS();
+    SJF();
+    roundRobin();
+    cout<<'\n';
+    memoryPaging();
+
+    //*******************************************************************
+    // IF YOU WANT TO RUN MULTITHREADING
+    // UNCOMMENT THE SECTION BELOW AND COMMNET THE FUNCTION CALLS ABOVE
+    // USE THE COMMAND (g++ -std=c++11 -pthread main.cpp)
+    //*******************************************************************
+
     // thread t1(FCFS); //create first thread(FCFS)
     // t1.join(); //start thread
     // thread t2(SJF); //create second thread(SJF)
     // t2.join(); //start thread
     // thread t3(roundRobin); //create third thread(RR)
     // t3.join(); //start thread
-    memoryPaging();
+    // cout<<'\n';
+    // memoryPaging();
     return 0;
 }
