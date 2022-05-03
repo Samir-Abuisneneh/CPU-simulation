@@ -62,7 +62,7 @@ void printInfo(vector<PCB> process, vector<int> finishTime,
     cout << "CPU Utilization = " << (optimalCPUusage / (progress * 1.0)) * 100 << "%\n";
 }
 
-void printPageTable(vector<vector<pair<int, int>>> pageTable, vector<int> temp, int numberOfProcesses)
+void printPageTable(vector<vector<pair<int, int>>> pageTable, vector<int> temp, int numberOfProcesses) // print a table of all processes and the pages it used
 {
     TextTable table('-', '|', 'x');
     cout << "Page Table for each process: \n";
@@ -74,7 +74,7 @@ void printPageTable(vector<vector<pair<int, int>>> pageTable, vector<int> temp, 
         table.add(" page number ");
         table.add(" frame number ");
         table.endOfRow();
-        for (int j = 0; j < temp[i]; j++) // could be 0 ??
+        for (int j = 0; j < temp[i]; j++) // adds a row to the table that contains page number and frame number
         {
             table.add("     " + to_string(pageTable[i][j].first));
             table.add("     " + to_string(pageTable[i][j].second));
@@ -86,9 +86,11 @@ void printPageTable(vector<vector<pair<int, int>>> pageTable, vector<int> temp, 
          << table << '\n';
 }
 
-void printMemoryTable(vector<bool> memory)
+void printMemoryTable(vector<bool> memory) // prints a status of memory showing which frames are free or busy
 {
     TextTable table('-', '|', 'x');
+    int busy = 0;
+    int free = 0;
     cout << "Logical Memory Status: \n";
     table.add(" Frame number ");
     table.add(" Frame status ");
@@ -99,26 +101,30 @@ void printMemoryTable(vector<bool> memory)
         if (memory[i] == true)
         {
             table.add("     Busy");
+            busy++;
         }
         else
         {
             table.add("     Free");
+            free++;
         }
         table.endOfRow();
     }
     cout << '\n'
          << table << '\n';
+    cout << "\nFree space = "<<((free*1.0)/(free+busy))*100<<"%";
+    cout << "\nBusy space = "<<((busy*1.0)/(free+busy))*100<<"%\n";
 }
 
-void printPhysicalAddress()
+void printPhysicalAddress() // takes a logical address and converts it to physical
 {
     int logicalAddress;
     int x, y;
     cout << "Enter logical address: \n";
     cin >> logicalAddress;
-    x = ceil(logicalAddress / (pageSize*1.0));
+    x = ceil(logicalAddress / (pageSize * 1.0));
     y = logicalAddress % pageSize;
-    cout << "Physical Address is: " << (pageSize * x) + y <<"\n";
+    cout << "Physical Address is: " << (pageSize * x) + y << "\n";
 }
 void FCFS() // First Come First Serve algorithm, based on sorting processes based on arrival time
 {
@@ -320,35 +326,35 @@ void roundRobin() // Round Robin algorithm works in multiples of quantum
     printInfo(process, finishTime, waitTime, turnaroundTime, progress);
 }
 
-void memoryPaging()
+void memoryPaging() // part 2 of the project, where this function gets us a page table and memory state
 {
-    srand(time(0));
+    srand(time(0)); // generate random seed for random values
     int totalPages = memorySize / pageSize;
-    int neededPages = 0;
+    int neededPages = 0; // number of pages we need for all processes
     int numberOfProcesses = process.size();
-    int max_number = totalPages - 1;
-    int min_number = 0;
+    int max_number = totalPages - 1; // for rand fuction
+    int min_number = 0;              // for rand fuction
     vector<int> processPages(numberOfProcesses);
     vector<int> temp(numberOfProcesses);
     vector<bool> memory;
-    vector<vector<pair<int, int>>> pageTable;
-    memory.resize(totalPages, false); // init all values to false
+    vector<vector<pair<int, int>>> pageTable; // 2d array with pair of values inside
+    memory.resize(totalPages, false);         // init all values to false
     for (int i = 0; i < numberOfProcesses; i++)
     {
-        processPages[i] = process[i].sizeByte / pageSize;
+        processPages[i] = process[i].sizeByte / pageSize; // get how many pages a process needs
         neededPages += processPages[i];
     }
-    if (neededPages > totalPages)
+    if (neededPages > totalPages) // in case the size of all processes is larger than available memory
     {
-        cout<<"Not enough memory!!\nclosing...";
+        cout << "Not enough memory!!\nclosing...";
         return;
     }
     temp = processPages;
-    cout<<"Memory size: "<<memorySize/1024<<"Kb\n";
-    cout<<"Page size: "<<pageSize<<" Bytes\n";
-    cout<<"total pages: "<<totalPages<<"\n\n";
+    cout << "Memory size: " << memorySize / 1024 << "Kb\n";
+    cout << "Page size: " << pageSize << " Bytes\n";
+    cout << "total pages: " << totalPages << "\n\n";
 
-    for (int i = 0; i < numberOfProcesses; i++)
+    for (int i = 0; i < numberOfProcesses; i++) // this checks if a spot in memory is reserved, if not it takes it
     {
         pageTable.push_back(vector<pair<int, int>>());
         while (processPages[i] > 0) // could be 0 ??
@@ -388,7 +394,7 @@ int main()
     FCFS();
     SJF();
     roundRobin();
-    cout<<'\n';
+    cout << '\n';
     memoryPaging();
 
     //*******************************************************************
